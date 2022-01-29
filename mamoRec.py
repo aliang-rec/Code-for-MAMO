@@ -49,9 +49,9 @@ class MAMRec:
 
         # Embedding model
         self.UEmb = UserEmbedding(self.n_layer, default_info[dataset]['u_in_dim'] * self.embedding_dim,
-                                  self.embedding_dim, activation=self.active_func).to(self.device)
+                                  self.embedding_dim, activation=self.active_func).to(self.device)      # 全连接层网络
         self.IEmb = ItemEmbedding(self.n_layer, default_info[dataset]['i_in_dim'] * self.embedding_dim,
-                                  self.embedding_dim, activation=self.active_func).to(self.device)
+                                  self.embedding_dim, activation=self.active_func).to(self.device)      # 全连接层网络
 
         # rec model
         self.rec_model = RecMAM(self.embedding_dim, self.n_y, self.n_layer, activation=self.active_func).to(self.device)
@@ -59,13 +59,13 @@ class MAMRec:
         # whole model
         self.model = BASEModel(self.x1_loading, self.x2_loading, self.UEmb, self.IEmb, self.rec_model).to(self.device)
 
-        self.phi_u, self.phi_i, self.phi_r = self.model.get_weights()
+        self.phi_u, self.phi_i, self.phi_r = self.model.get_weights()       # 获取权重
 
         self.FeatureMEM = FeatureMem(self.n_k, default_info[dataset]['u_in_dim'] * self.embedding_dim,
-                                     self.model, device=self.device)
-        self.TaskMEM = TaskMem(self.n_k, self.embedding_dim, device=self.device)
+                                     self.model, device=self.device)        # 特征记忆模块
+        self.TaskMEM = TaskMem(self.n_k, self.embedding_dim, device=self.device)    # 任务记忆模块
 
-        self.train = self.train_with_meta_optimization
+        self.train = self.train_with_meta_optimization                  # 训练带有元优化器
         self.test = self.test_with_meta_optimization
 
         self.train()
@@ -82,8 +82,8 @@ class MAMRec:
                 self.model.init_u_mem_weights(self.phi_u, bias_term, self.tao, self.phi_i, self.phi_r)
                 self.model.init_ui_mem_weights(att_values, self.TaskMEM)
 
-                user_module = LOCALUpdate(self.model, u, self.dataset, self.support_size, self.query_size, self.batch_size,
-                                          self.n_inner_loop, self.rho, top_k=3, device=self.device)
+                user_module = LOCALUpdate(self.model, u, self.dataset, self.support_size, self.query_size,
+                                          self.batch_size, self.n_inner_loop, self.rho, top_k=3, device=self.device)
                 u_grad, i_grad, r_grad = user_module.train()
 
                 u_grad_sum, i_grad_sum, r_grad_sum = grads_sum(u_grad_sum, u_grad), grads_sum(i_grad_sum, i_grad), \
@@ -111,3 +111,7 @@ class MAMRec:
             user_module = LOCALUpdate(self.model, u, self.dataset, self.support_size, self.query_size, self.batch_size,
                                       self.n_inner_loop, self.rho, top_k=3, device=self.device)
             user_module.test()
+
+
+if __name__ == '__main__':
+    MAMRec('movielens')

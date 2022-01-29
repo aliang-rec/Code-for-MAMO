@@ -4,9 +4,9 @@ from utils import *
 class RecMAM(torch.nn.Module):
     def __init__(self, embedding_dim, n_y, n_layer, activation='sigmoid', classification=True):
         super(RecMAM, self).__init__()
-        self.input_size = embedding_dim * 2
+        self.input_size = embedding_dim * 2     # 输出大小
 
-        self.mem_layer = torch.nn.Linear(self.input_size, self.input_size)
+        self.mem_layer = torch.nn.Linear(self.input_size, self.input_size)  # 全连接层
 
         fcs = []
         last_size = self.input_size
@@ -18,7 +18,7 @@ class RecMAM(torch.nn.Module):
             last_size = out_dim
             fcs.append(activation_func(activation))
 
-        self.fc = torch.nn.Sequential(*fcs)
+        self.fc = torch.nn.Sequential(*fcs)                 # 全连接层
 
         if classification:
             finals = [torch.nn.Linear(last_size, n_y), activation_func('softmax')]
@@ -28,7 +28,7 @@ class RecMAM(torch.nn.Module):
 
     def forward(self, x1, x2):
         x = torch.cat([x1, x2], 1)
-        out0 = self.mem_layer(x)
+        out0 = self.mem_layer(x)                # 全连接层
         out = self.fc(out0)
         out = self.final_layer(out)
         return out

@@ -1,6 +1,6 @@
 from __future__ import print_function
 from prepare_data.prepareMovielens import *
-from prepare_data.prepareBookcrossing import *
+# from prepare_data.prepareBookcrossing import *
 
 
 def id_storing(dataset='movielens', max_count=20):

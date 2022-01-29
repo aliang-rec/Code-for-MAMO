@@ -1,5 +1,6 @@
 from utils import *
 
+
 # ======================Embedding=========================
 # item embedding
 class ItemEmbedding(torch.nn.Module):
@@ -28,6 +29,7 @@ class ItemEmbedding(torch.nn.Module):
         out = self.final_layer(x)
         return out
 
+
 # user embedding
 class UserEmbedding(torch.nn.Module):
     def __init__(self, n_layer, in_dim, embedding_dim, activation='sigmoid'):
@@ -38,7 +40,7 @@ class UserEmbedding(torch.nn.Module):
         last_size = self.input_size
         hid_dim = int(self.input_size / 2)
 
-        for i in range(n_layer - 1):
+        for i in range(n_layer - 1):                                # 全连接层
             linear_model = torch.nn.Linear(last_size, hid_dim)
             linear_model.bias.data.fill_(0.0)
             fcs.append(linear_model)

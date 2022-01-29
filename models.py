@@ -10,46 +10,46 @@ class BASEModel(torch.nn.Module):
         self.input_item_loading = input2_module
         self.user_embedding = embedding1_module
         self.item_embedding = embedding2_module
-        self.rec_model = rec_module
+        self.rec_model = rec_module                 #
 
     def forward(self, x1, x2):
-        pu, pi = self.input_user_loading(x1), self.input_item_loading(x2)
-        eu, ei = self.user_embedding(pu), self.item_embedding(pi)
-        rec_value = self.rec_model(eu, ei)
+        pu, pi = self.input_user_loading(x1), self.input_item_loading(x2)       # 加载用户、item embedding
+        eu, ei = self.user_embedding(pu), self.item_embedding(pi)               # 生成user_embedding\item_embedding
+        rec_value = self.rec_model(eu, ei)                                      # 推荐器
         return rec_value
 
     def get_weights(self):
-        u_emb_params = get_params(self.user_embedding.parameters())
-        i_emb_params = get_params(self.item_embedding.parameters())
-        rec_params = get_params(self.rec_model.parameters())
+        u_emb_params = get_params(self.user_embedding.parameters())         # user embedding参数
+        i_emb_params = get_params(self.item_embedding.parameters())         # item embedding参数
+        rec_params = get_params(self.rec_model.parameters())                # rec 参数
         return u_emb_params, i_emb_params, rec_params
 
     def get_zero_weights(self):
-        zeros_like_u_emb_params = get_zeros_like_params(self.user_embedding.parameters())
+        zeros_like_u_emb_params = get_zeros_like_params(self.user_embedding.parameters())   # 获取和user embedding一样的参数
         zeros_like_i_emb_params = get_zeros_like_params(self.item_embedding.parameters())
         zeros_like_rec_params = get_zeros_like_params(self.rec_model.parameters())
         return zeros_like_u_emb_params, zeros_like_i_emb_params, zeros_like_rec_params
 
     def init_weights(self, u_emb_para, i_emb_para, rec_para):
-        init_params(self.user_embedding.parameters(), u_emb_para)
-        init_params(self.item_embedding.parameters(), i_emb_para)
-        init_params(self.rec_model.parameters(), rec_para)
+        init_params(self.user_embedding.parameters(), u_emb_para)           # 初始化参数
+        init_params(self.item_embedding.parameters(), i_emb_para)           # 初始化参数
+        init_params(self.rec_model.parameters(), rec_para)                  # 初始化
 
     def get_grad(self):
-        u_grad = get_grad(self.user_embedding.parameters())
-        i_grad = get_grad(self.item_embedding.parameters())
-        r_grad = get_grad(self.rec_model.parameters())
+        u_grad = get_grad(self.user_embedding.parameters())                 # 获取梯度
+        i_grad = get_grad(self.item_embedding.parameters())                 # 获取梯度
+        r_grad = get_grad(self.rec_model.parameters())                      # 获取梯度
         return u_grad, i_grad, r_grad
 
     def init_u_mem_weights(self, u_emb_para, mu, tao, i_emb_para, rec_para):
-        init_u_mem_params(self.user_embedding.parameters(), u_emb_para, mu, tao)
-        init_params(self.item_embedding.parameters(), i_emb_para)
-        init_params(self.rec_model.parameters(), rec_para)
+        init_u_mem_params(self.user_embedding.parameters(), u_emb_para, mu, tao)        # 获取记忆参数
+        init_params(self.item_embedding.parameters(), i_emb_para)                       # 初始化参数
+        init_params(self.rec_model.parameters(), rec_para)                              # 初始化参数
 
     def init_ui_mem_weights(self, att_values, task_mem):
         # init the weights only for the mem layer
-        u_mui = task_mem.read_head(att_values)
-        init_ui_mem_params(self.rec_model.mem_layer.parameters(), u_mui)
+        u_mui = task_mem.read_head(att_values)                                  # 注意力机制
+        init_ui_mem_params(self.rec_model.mem_layer.parameters(), u_mui)        # 初始化记忆参数
 
     def get_ui_mem_weights(self):
         return get_params(self.rec_model.mem_layer.parameters())
@@ -62,15 +62,15 @@ class LOCALUpdate:
                                                                                                               sup_size,
                                                                                                               que_size,
                                                                                                               device)
-        user_data = UserDataLoader(self.s_x1, self.s_x2, self.s_y, self.s_y0)
-        self.user_data_loader = DataLoader(user_data, batch_size=bt_size)
-        self.model = your_model
+        user_data = UserDataLoader(self.s_x1, self.s_x2, self.s_y, self.s_y0)       # 更新用户数据加载
+        self.user_data_loader = DataLoader(user_data, batch_size=bt_size)           # 更新用户数据加载
+        self.model = your_model                                                     # 加载模型
 
-        self.update_lr = update_lr
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.update_lr)
+        self.update_lr = update_lr                                                  # 更新学习率
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.update_lr)   # 优化器
 
         # self.loss_fn = torch.nn.NLLLoss()
-        self.loss_fn = torch.nn.CrossEntropyLoss()
+        self.loss_fn = torch.nn.CrossEntropyLoss()                                  # 交叉商损失
 
         self.n_loop = n_loop
         self.top_k = top_k
@@ -88,13 +88,13 @@ class LOCALUpdate:
                 pred_y = self.model(x1, x2)
                 loss = self.loss_fn(pred_y, y)
                 self.optimizer.zero_grad()
-                loss.backward()  # local theta updating
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 5.)
+                loss.backward()                             # local theta updating
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 5.)        # 截断梯度
                 self.optimizer.step()
 
-        q_pred_y = self.model(self.q_x1, self.q_x2)
+        q_pred_y = self.model(self.q_x1, self.q_x2)                     # 预测
         self.optimizer.zero_grad()
-        loss = self.loss_fn(q_pred_y, self.q_y)
+        loss = self.loss_fn(q_pred_y, self.q_y)                         # 损失函数
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), 5.)
 

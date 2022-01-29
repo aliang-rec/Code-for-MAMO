@@ -35,7 +35,7 @@ import numpy as np
 
 
 def load_movielens():
-    path = 'data_raw/ml-1m/'
+    path = './data_raw/ml-1m/'
     user_info_path = "{}/users.dat".format(path)
     item_info_path = "{}/movies_extrainfos.dat".format(path)
     rating_path = '{}/ratings.dat'.format(path)
@@ -62,7 +62,7 @@ def id_storing_movielens(max_count=20):
     storing_path = 'data_processed'
     dataset = 'movielens'
 
-    if not os.path.exists('{}/{}/user_state_ids.p'.format(storing_path, dataset)):
+    if not os.path.exists('./{}/{}/user_state_ids.p'.format(storing_path, dataset)):
         _, _, ratings_dat = load_movielens()
 
         sorted_time = ratings_dat.sort_values(by='time', ascending=True).reset_index(drop=True)

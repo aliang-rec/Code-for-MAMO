@@ -13,6 +13,7 @@ def load_list(f_name):
             list_.append(line.strip())
     return list_
 
+
 def pickle_load(file_name):
     path = 'data_raw/book_crossing/'
     target_file = pickle.load(open(path+file_name, 'rb'))
